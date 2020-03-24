@@ -106,4 +106,6 @@ fs.readdir(routesDir, (err, files) => {
   });
 });
 
+require('./authServer');
+
 app.listen(port, () => fn.console.log(fn.color('white', `${process.env.SERVER_NAME} Auth Server started on port:`), fn.color('info', port)));
