@@ -58,9 +58,10 @@ const functions = require('./config/functions');
 envVars.functions = functions;
 const fn = functions;
 
-const sequelize = new Sequelize('roam', 'root', 'root', {
-  host: 'localhost',
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PW, {
+  host: process.env.DB_HOST,
   dialect: 'mysql',
+  port: Number(process.env.DB_PORT),
   pool: {
     max: 5,
     min: 0,
@@ -72,7 +73,7 @@ const sequelize = new Sequelize('roam', 'root', 'root', {
 envVars.requires.sequelize = sequelize;
 
 sequelize.authenticate().then(() => {
-  fn.console.log('!c:success!Database connection has been established successfully.!/c!');
+  fn.console.log(fn.color('success', 'Database connection has been established successfully.'));
 }).catch((err) => {
   console.error('Unable to connect to the database:', err);
 });
@@ -96,4 +97,4 @@ app.use(middleware.requestVersion.setVersionByHeader('Accept-Version'));
 
 require('./routes/authRoutes');
 
-app.listen(port, () => fn.console.log(`!c:white!${process.env.SERVER_NAME} Auth Server started on port:!/c! !c:info!${port}!/c!`));
+app.listen(port, () => fn.console.log(fn.color('white', `${process.env.SERVER_NAME} Auth Server started on port:`), fn.color('info', port)));

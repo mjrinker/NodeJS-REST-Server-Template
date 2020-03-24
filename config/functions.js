@@ -5,7 +5,27 @@ const { versionRouter } = envVars.requires;
 
 const fn = {};
 
-const colorConstants = {
+// wrapper for async middleware functions so that error stack traces will be shown in console
+// https://medium.com/@Abazhenov/using-async-await-in-express-with-node-8-b8af872c0016
+// updated so it converts standard rejection message to error object
+// so it can be handled by the error handler
+fn.asyncMw = (func) => (req, res, next) => {
+  Promise.resolve(func(req, res, next))
+    .catch((error) => {
+      let newError = error;
+      if (!(error instanceof Error)) {
+        const message = (error && typeof (error) === 'string') ? error : 'Server Error';
+        newError = new Error(message);
+      }
+      fn.console.log(`!c:error!${newError}!/c!`);
+      next(newError);
+    });
+};
+
+
+fn.color = (color, value) => `!c:${color}!${value}!/c!`;
+
+fn.colors = {
   black: '0:0:0',
   blue: '0:123:255',
   cyan: '23:162:184',
@@ -35,37 +55,28 @@ const colorConstants = {
   yellow: '255:193:7',
 };
 
-// wrapper for async middleware functions so that error stack traces will be shown in console
-// https://medium.com/@Abazhenov/using-async-await-in-express-with-node-8-b8af872c0016
-// updated so it converts standard rejection message to error object
-// so it can be handled by the error handler
-fn.asyncMw = (func) => (req, res, next) => {
-  Promise.resolve(func(req, res, next))
-    .catch((error) => {
-      let newError = error;
-      if (!(error instanceof Error)) {
-        const message = (error && typeof (error) === 'string') ? error : 'Server Error';
-        newError = new Error(message);
-      }
-      fn.console.log(`!c:error!${newError}!/c!`);
-      next(newError);
-    });
-};
-
 fn.console = {};
-fn.console.log = (string) => {
+fn.console.log = (...args) => {
   const escapeCode = {
     start: '\x1b[38:2:',
     end: '\x1b[0m',
   };
 
-  const newString = string.split(/(?=!c:[\w#,:]+!.*?!\/c!)/g).map((subString) => {
-    const colorCode = subString.replace(/.*!c:([\w#,:]+)!.*/, '$1');
-    const color = fn.rgbColor(colorCode);
-    return subString.replace(/!c:([\w#,:]+)!/, `${escapeCode.start + color}m`).replace(/!\/c!/, escapeCode.end);
-  }).join('');
+  const newArgs = [];
 
-  console.log(newString);
+  args.forEach((arg) => {
+    const newArg = (String(arg)).split(/(?=!c:[\w#,:]+!.*?!\/c!)/g).map((subString) => {
+      const colorCode = subString.replace(/.*!c:([\w#,:]+)!.*/, '$1');
+      const color = fn.rgbColor(colorCode);
+      const startCode = Number(process.env.COLOR_LOGS) ? `${escapeCode.start + color}m` : '';
+      const endCode = Number(process.env.COLOR_LOGS) ? escapeCode.end : '';
+      return subString.replace(/!c:([\w#,:]+)!/, startCode).replace(/!\/c!/, endCode);
+    }).join('');
+
+    newArgs.push(newArg);
+  });
+
+  console.log(...newArgs);
 };
 
 // get all properties on an object, enumerable or non-enumerable
@@ -93,7 +104,7 @@ fn.getFullErrorObj = (errorObj) => {
 fn.objToMap = (obj) => new Map(Object.entries(obj));
 
 fn.rgbColor = (colorCode) => {
-  let rgbColor = colorConstants[colorCode] || '';
+  let rgbColor = fn.colors[colorCode] || '';
 
   if (colorCode.startsWith('#')) {
     let redHex = 'ff';
