@@ -17,7 +17,7 @@ fn.asyncMw = (func) => (req, res, next) => {
         const message = (error && typeof (error) === 'string') ? error : 'Server Error';
         newError = new Error(message);
       }
-      fn.console.log(`!c:error!${newError}!/c!`);
+      fn.console.log(fn.color('error', newError));
       next(newError);
     });
 };
@@ -139,7 +139,7 @@ fn.setRoutes = (params) => {
         if (params.controller[versions.func]) {
           versionRoutesObj[versionNumber] = params.controller[versions.func];
         } else {
-          fn.console.log(`ROUTES: !c:warn!${versions.func}!/c! not found`);
+          fn.console.log('ROUTES:', fn.color('warn', versions.func), 'not found');
         }
       });
     });
