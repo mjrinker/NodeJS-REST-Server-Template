@@ -75,7 +75,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
 envVars.requires.sequelize = sequelize;
 
 sequelize.authenticate().then(() => {
-  fn.console.log(fn.color('success', 'Database connection has been established successfully.'));
+  console.log('Database connection has been established successfully.');
 }).catch((err) => {
   console.error('Unable to connect to the database:', err);
 });
@@ -110,10 +110,10 @@ fs.readdir(routesDir, (err, files) => {
 
 const child = spawn('node', ['authServer.js']);
 child.stdout.on('data', (chunk) => {
-  fn.console.log('[AuthServer]', `${chunk}`.trim());
+  console.log('[AuthServer]', `${chunk}`.trim());
 });
 child.on('close', (code) => {
   console.log(`AuthServer exited with code ${code}`);
 });
 
-app.listen(port, () => fn.console.log(fn.color('white', `${process.env.SERVER_NAME} Auth Server started on port:`), fn.color('info', port)));
+app.listen(port, () => console.log(`${process.env.SERVER_NAME} Auth Server started on port: ${port}`);

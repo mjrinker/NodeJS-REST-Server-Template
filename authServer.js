@@ -73,7 +73,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
 envVars.requires.sequelize = sequelize;
 
 sequelize.authenticate().then(() => {
-  fn.console.log(fn.color('success', 'Database connection has been established successfully.'));
+  console.log('Database connection has been established successfully.');
 }).catch((err) => {
   console.error('Unable to connect to the database:', err);
 });
@@ -97,4 +97,4 @@ app.use(middleware.requestVersion.setVersionByHeader('Accept-Version'));
 
 require('./routes/authRoutes');
 
-app.listen(port, () => fn.console.log(fn.color('white', `${process.env.SERVER_NAME} Auth Server started on port:`), fn.color('info', port)));
+app.listen(port, () => console.log(`${process.env.SERVER_NAME} Auth Server started on port: ${port}`);
