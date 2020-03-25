@@ -9,6 +9,7 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 const request = require('request');
 const Sequelize = require('sequelize');
+const { spawn } = require('child_process');
 const versionRouter = require('express-version-route');
 
 const app = express();
@@ -40,6 +41,7 @@ const envVars = {
     request,
     Sequelize,
     sequelize: null,
+    spawn,
     transporters,
     versionRouter,
   },
@@ -106,6 +108,12 @@ fs.readdir(routesDir, (err, files) => {
   });
 });
 
-require('./authServer');
+const child = spawn('node', ['authServer.js']);
+child.stdout.on('data', (chunk) => {
+  fn.console.log('[AuthServer]', `${chunk}`.trim());
+});
+child.on('close', (code) => {
+  console.log(`AuthServer exited with code ${code}`);
+});
 
 app.listen(port, () => fn.console.log(fn.color('white', `${process.env.SERVER_NAME} Auth Server started on port:`), fn.color('info', port)));
